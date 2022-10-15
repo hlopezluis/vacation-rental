@@ -22,7 +22,8 @@ namespace VacationRental.Api.Tests
         {
             var postRentalRequest = new RentalBindingModel
             {
-                Units = 4
+                Units = 2,
+                PreparationTimeInDays = 1
             };
 
             ResourceIdViewModel postRentalResult;
@@ -52,8 +53,8 @@ namespace VacationRental.Api.Tests
 
                 var getBookingResult = await getBookingResponse.Content.ReadAsAsync<BookingViewModel>();
                 Assert.Equal(postBookingRequest.RentalId, getBookingResult.RentalId);
-                //Assert.Equal(postBookingRequest.Nights, getBookingResult.Nights);
-                //Assert.Equal(postBookingRequest.Start, getBookingResult.Start);
+                Assert.Equal(postBookingRequest.Nights, getBookingResult.Bookings.Nights);
+                Assert.Equal(postBookingRequest.Start, getBookingResult.Bookings.Start);
             }
         }
 
