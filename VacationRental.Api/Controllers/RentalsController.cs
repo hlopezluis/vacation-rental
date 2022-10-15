@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using VacationRental.Api.Models;
 
@@ -18,26 +19,35 @@ namespace VacationRental.Api.Controllers
 
         [HttpGet]
         [Route("{rentalId:int}")]
-        public RentalViewModel Get(int rentalId)
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(RentalViewModel))]
+        [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(String))]
+        public IActionResult Get(int rentalId)
         {
             if (!_rentals.ContainsKey(rentalId))
-                throw new ApplicationException("Rental not found");
-
-            return _rentals[rentalId];
+            {
+                return NotFound("Rental not found");
+            }
+            else
+            {
+                return Ok(_rentals[rentalId]);
+            }
         }
 
         [HttpPost]
-        public ResourceIdViewModel Post(RentalBindingModel model)
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ResourceIdViewModel))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(String))]
+        public IActionResult Post(RentalBindingModel model)
         {
             var key = new ResourceIdViewModel { Id = _rentals.Keys.Count + 1 };
 
             _rentals.Add(key.Id, new RentalViewModel
             {
                 Id = key.Id,
-                Units = model.Units
+                Units = model.Units,
+                PreparationTimeInDays = model.PreparationTimeInDays
             });
 
-            return key;
+            return Ok(key);
         }
     }
 }
