@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using VacationRental.Api.Models;
+using VacationRental.Api.Services;
 
 namespace VacationRental.Api.Controllers
 {
@@ -10,11 +11,11 @@ namespace VacationRental.Api.Controllers
     [ApiController]
     public class RentalsController : ControllerBase
     {
-        private readonly IDictionary<int, RentalViewModel> _rentals;
+        private readonly IRentalsService _rentalsService;
 
-        public RentalsController(IDictionary<int, RentalViewModel> rentals)
+        public RentalsController(IRentalsService service)
         {
-            _rentals = rentals;
+            _rentalsService = service;
         }
 
         [HttpGet]
@@ -23,14 +24,12 @@ namespace VacationRental.Api.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(String))]
         public IActionResult Get(int rentalId)
         {
-            if (!_rentals.ContainsKey(rentalId))
-            {
+            RentalViewModel rentalViewModel = _rentalsService.Get(rentalId);
+
+            if (rentalViewModel == null)
                 return NotFound("Rental not found");
-            }
             else
-            {
-                return Ok(_rentals[rentalId]);
-            }
+                return Ok(rentalViewModel);
         }
 
         [HttpPost]
@@ -38,16 +37,12 @@ namespace VacationRental.Api.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(String))]
         public IActionResult Post(RentalBindingModel model)
         {
-            var key = new ResourceIdViewModel { Id = _rentals.Keys.Count + 1 };
+            ResourceIdViewModel resourceIdViewModel = _rentalsService.AddRental(model);
 
-            _rentals.Add(key.Id, new RentalViewModel
-            {
-                Id = key.Id,
-                Units = model.Units,
-                PreparationTimeInDays = model.PreparationTimeInDays
-            });
-
-            return Ok(key);
+            if (resourceIdViewModel == null)
+                return BadRequest("Bad request");
+            else
+                return Ok(resourceIdViewModel);
         }
     }
 }
